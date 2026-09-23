@@ -10,6 +10,21 @@ mouse_listener = None
 
 OPENERS = "({["
 
+# ---------------------------------------------------------------------------
+# Trigger button — change this one value to switch triggers.
+#
+#   mouse.Button.x2     mouse button 5 (forward side button)  [default]
+#   mouse.Button.x1     mouse button 4 (back side button)
+#   mouse.Button.middle middle mouse button (scroll wheel click)
+#   mouse.Button.left    left mouse button  (not recommended — normal clicks)
+#   mouse.Button.right   right mouse button (will also open context menus)
+#
+# Any other pynput mouse.Button member works the same way; just assign it
+# here. The rest of the script reads this constant, so no other edits are
+# needed (message text below is generic on purpose).
+# ---------------------------------------------------------------------------
+TRIGGER_BUTTON = mouse.Button.x2
+
 
 def type_line(line: str):
     """Type one line, neutralizing editor auto-closing brackets."""
@@ -61,8 +76,7 @@ def type_text(text: str):
 
 def on_click(x, y, button, pressed):
     global typed_text
-    # Button.x2 = mouse button 5 (side/forward button)
-    if button == mouse.Button.x2 and pressed:
+    if button == TRIGGER_BUTTON and pressed:
         if not typed_text:
             print("\n[!] No text stored yet.")
             return
@@ -103,8 +117,8 @@ def main():
     print("\n--- Text stored ---")
     print(typed_text)
     print("-------------------")
-    print("Click into your target window, then press mouse button 5")
-    print("(side/forward button) to type the text.")
+    print("Click into your target window, then press the trigger mouse")
+    print("button (see TRIGGER_BUTTON at the top of this file) to type.")
     print("Quit: Ctrl+Shift+Q (from any window) or Ctrl+C (in this terminal).\n")
 
     mouse_listener = mouse.Listener(on_click=on_click)
