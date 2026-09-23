@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 from pynput import mouse, keyboard
@@ -84,8 +85,11 @@ def on_click(x, y, button, pressed):
         threading.Thread(target=type_text, args=(typed_text,), daemon=True).start()
 
 
-def read_multiline() -> str:
-    print("Paste your text below (multi-line is fine).")
+def read_multiline(is_replace: bool = False) -> str:
+    if is_replace:
+        print("Paste the NEW text below (multi-line is fine).")
+    else:
+        print("Paste your text below (multi-line is fine).")
     print("When finished, type END on its own line (or press Ctrl+Z then Enter).\n")
     lines = []
     while True:
@@ -95,14 +99,16 @@ def read_multiline() -> str:
             break
         if line.strip() == "END":
             break
+        if line.strip() == "QUIT":
+            return ""  # abandon entry; caller treats as cancel if empty
         lines.append(line)
     return "\n".join(lines)
 
 
 def on_quit_hotkey():
     quit_event.set()
-    if mouse_listener is not None:
-        mouse_listener.stop()
+    print("\n[*] Quit requested — exiting.")
+    os._exit(0)
 
 
 def main():
@@ -119,7 +125,12 @@ def main():
     print("-------------------")
     print("Click into your target window, then press the trigger mouse")
     print("button (see TRIGGER_BUTTON at the top of this file) to type.")
-    print("Quit: Ctrl+Shift+Q (from any window) or Ctrl+C (in this terminal).\n")
+    print()
+    print("Commands (in this terminal):")
+    print("  REPLACE  - enter new text that replaces what is stored")
+    print("             (finish with END on its own line)")
+    print("  QUIT     - exit the script")
+    print("Hotkey: Ctrl+Shift+Q quits from any window.\n")
 
     mouse_listener = mouse.Listener(on_click=on_click)
     mouse_listener.start()
@@ -131,10 +142,32 @@ def main():
 
     try:
         while mouse_listener.running and not quit_event.is_set():
-            time.sleep(0.1)
+            try:
+                cmd = input("> ")
+            except EOFError:
+                break
+            except KeyboardInterrupt:
+                break
+            cmd = cmd.strip()
+            if not cmd:
+                continue
+            if cmd.upper() == "QUIT":
+                break
+            if cmd.upper() == "REPLACE":
+                new_text = read_multiline(is_replace=True)
+                if new_text:
+                    typed_text = new_text
+                    print("\n--- Text replaced ---")
+                    print(typed_text)
+                    print("---------------------\n")
+                else:
+                    print("[*] Empty input — stored text unchanged.\n")
+                continue
+            print("[!] Unknown command. Use REPLACE or QUIT.\n")
     except KeyboardInterrupt:
         pass
     finally:
+        quit_event.set()
         if mouse_listener.running:
             mouse_listener.stop()
         hotkeys.stop()

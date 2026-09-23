@@ -46,6 +46,18 @@ python auto_type.py
    button).
 4. The text is typed at the cursor position.
 
+### Replacing the stored text
+
+While the script is running it shows a `>` prompt in the terminal. Type:
+
+```text
+REPLACE
+```
+
+then paste/enter the new text and finish with `END` on its own line. The old
+text is discarded and the new text is what the trigger button will type from
+then on. Empty input (just `END`) leaves the stored text unchanged.
+
 ### Changing the trigger button
 
 Not everyone has mouse button 5. The trigger is a single constant near the
@@ -71,6 +83,7 @@ the script after editing.
 
 ### Quitting
 
+- **`QUIT`** — type at the `>` prompt in the terminal.
 - **`Ctrl+Shift+Q`** — works from any window (recommended).
 - **`Ctrl+C`** — only works while the terminal itself is focused.
 
